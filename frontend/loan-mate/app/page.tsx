@@ -4,25 +4,29 @@ import { useRouter } from 'next/navigation';
 import { Button } from './components/button';
 import { Card, CardContent, CardHeader, CardTitle } from './components/card';
 import { Badge } from './components/badge';
-import { 
-  Bot, 
-  BrainCircuit, 
-  FileCheck, 
-  ShieldCheck, 
-  Cpu, 
-  Code2, 
-  Zap, 
+import { useAuth } from '../lib/auth-context';
+import {
+  Bot,
+  BrainCircuit,
+  FileCheck,
+  ShieldCheck,
+  Cpu,
+  Code2,
+  Zap,
   Workflow,
   MessageSquare,
   FileOutput,
   ChevronRight,
   Terminal,
-  LogIn, 
-  UserPlus
+  LogIn,
+  UserPlus,
+  LogOut,
+  User
 } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
+  const { user, logout, loading } = useAuth();
 
   // Features focusing on the "Agentic AI" aspect
   const systemFeatures = [
@@ -99,21 +103,48 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              className="text-gray-600 hover:text-blue-600 hover:bg-blue-50"
-              //TODO:Update route here
-              onClick={() => router.push('/login')}
-            >
-              Join Us
-            </Button>
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              //TODO: Update route here
-              onClick={() => router.push('/signup')}
-            >
-              Try Now
-            </Button>
+            {loading ? (
+              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            ) : user ? (
+              <>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <User className="w-4 h-4" />
+                  <span className="text-sm font-medium">{user.displayName || user.email}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  className="text-gray-600 hover:text-red-600 hover:bg-red-50"
+                  onClick={async () => {
+                    try {
+                      await logout();
+                    } catch (error) {
+                      console.error('Logout error:', error);
+                    }
+                  }}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  className="text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                  onClick={() => router.push('/login')}
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => router.push('/signup')}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
