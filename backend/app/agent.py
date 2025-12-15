@@ -60,10 +60,17 @@ class FinancialAgent:
             tools=all_tools,
             system_instruction=self.system_instruction
         )
-
-    def get_response(self, user_text: str):
+    
+    def get_response(self, user_text: str, history: list = None):
+        """
+        Handles chat queries with history context.
+        """
         try:
-            chat = self.model.start_chat(enable_automatic_function_calling=True)
+            chat = self.model.start_chat(
+                history=history if history else [],
+                enable_automatic_function_calling=True
+            )
+            
             response = chat.send_message(user_text)
             return response.text
         except Exception as e:
