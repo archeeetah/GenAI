@@ -62,8 +62,8 @@ export default function HomePage() {
     },
     {
       title: "Verification Agent",
-    
-    role: "KYC Validator",
+
+      role: "KYC Validator",
       desc: "Simulates fetching data from a CRM to verify customer identity and address details.",
       color: "bg-green-100 text-green-700"
     },
@@ -88,12 +88,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      
+
       {/* --- NAVBAR --- */}
       <nav className="bg-white border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div 
-            className="flex items-center gap-2 cursor-pointer" 
+          <div
+            className="flex items-center gap-2 cursor-pointer"
             onClick={() => router.push('/')}
           >
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -152,31 +152,31 @@ export default function HomePage() {
       {/* --- HERO SECTION --- */}
       <section className="bg-white pt-20 pb-24 px-4 overflow-hidden relative">
         {/* Background Grid Pattern */}
-        <div className="absolute inset-0 z-0 opacity-[0.03]" 
-             style={{ backgroundImage: 'radial-gradient(#4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+        <div className="absolute inset-0 z-0 opacity-[0.03]"
+          style={{ backgroundImage: 'radial-gradient(#4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
         </div>
 
         <div className="container mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            
+
             {/* Left Content */}
             <div className="space-y-8">
               <div className="space-y-4">
 
                 <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
-                  The Future of <br/>
+                  The Future of <br />
                   <span className="text-blue-600">Agentic AI Lending</span>
                 </h1>
                 <p className="text-xl text-gray-600 max-w-lg leading-relaxed">
                   Experience a fully autonomous multi-agent system that negotiates, verifies, underwrites, and sanctions loans in real-time.
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-white h-12 px-8 text-base shadow-lg shadow-blue-200/50 transition-all hover:scale-105"
-                  onClick={() => router.push('/demo')}
+                  onClick={() => router.push('/chat')}
                 >
                   <Zap className="w-4 h-4 mr-2" />
                   Try Live Demo
@@ -188,7 +188,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <Workflow className="w-4 h-4" />
                   <span>End-to-End Automation</span>
-                </div>  
+                </div>
                 <div className="flex items-center gap-2">
                   <Terminal className="w-4 h-4" />
                   <span>Real-time Logs</span>
@@ -220,8 +220,8 @@ export default function HomePage() {
             {systemFeatures.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <Card 
-                  key={index} 
+                <Card
+                  key={index}
                   className="border-none shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   <CardHeader>
@@ -252,11 +252,11 @@ export default function HomePage() {
                 <div className="w-20 h-1.5 bg-blue-600 rounded-full"></div>
               </div>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Unlike traditional chatbots, LoanMate uses a <strong>Master-Worker</strong> architecture. 
-                The Master Agent breaks down the loan process into atomic tasks and assigns them to specialized agents, 
+                Unlike traditional chatbots, LoanMate uses a <strong>Master-Worker</strong> architecture.
+                The Master Agent breaks down the loan process into atomic tasks and assigns them to specialized agents,
                 ensuring accuracy and modularity.
               </p>
-              
+
               <div className="space-y-4">
                 {agentRoles.map((agent, i) => (
                   <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-gray-200 transition-colors">
@@ -274,32 +274,32 @@ export default function HomePage() {
 
             {/* Diagram Visual Placeholder */}
             <div className="relative flex justify-center">
-                <div className="relative w-full max-w-md aspect-square bg-gray-900 rounded-full flex items-center justify-center border-4 border-gray-100 shadow-2xl">
-                    <div className="absolute inset-0 bg-gray-900 rounded-full opacity-50 blur-3xl"></div>
-                    
-                    {/* Center Node */}
-                    <div className="w-32 h-32 bg-blue-600 rounded-full flex flex-col items-center justify-center z-20 shadow-lg shadow-blue-500/50">
-                        <BrainCircuit className="w-10 h-10 text-white mb-1" />
-                        <span className="text-xs font-bold text-white">MASTER</span>
-                    </div>
+              <div className="relative w-full max-w-md aspect-square bg-gray-900 rounded-full flex items-center justify-center border-4 border-gray-100 shadow-2xl">
+                <div className="absolute inset-0 bg-gray-900 rounded-full opacity-50 blur-3xl"></div>
 
-                    {/* Orbiting Nodes */}
-                    <div className="absolute top-10 left-10 w-20 h-20 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border border-gray-700">
-                        <MessageSquare className="w-6 h-6 text-blue-400" />
-                        <span className="text-[10px] text-gray-400 mt-1">Sales</span>
-                    </div>
-                    <div className="absolute top-10 right-10 w-20 h-20 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border border-gray-700">
-                        <ShieldCheck className="w-6 h-6 text-purple-400" />
-                        <span className="text-[10px] text-gray-400 mt-1">Risk</span>
-                    </div>
-                    <div className="absolute bottom-10 w-20 h-20 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border border-gray-700">
-                        <FileCheck className="w-6 h-6 text-green-400" />
-                        <span className="text-[10px] text-gray-400 mt-1">KYC</span>
-                    </div>
-
-                    {/* Connection Lines (Simulated with CSS) */}
-                    <div className="absolute w-full h-full border border-dashed border-gray-700 rounded-full opacity-30 animate-spin-slow"></div>
+                {/* Center Node */}
+                <div className="w-32 h-32 bg-blue-600 rounded-full flex flex-col items-center justify-center z-20 shadow-lg shadow-blue-500/50">
+                  <BrainCircuit className="w-10 h-10 text-white mb-1" />
+                  <span className="text-xs font-bold text-white">MASTER</span>
                 </div>
+
+                {/* Orbiting Nodes */}
+                <div className="absolute top-10 left-10 w-20 h-20 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border border-gray-700">
+                  <MessageSquare className="w-6 h-6 text-blue-400" />
+                  <span className="text-[10px] text-gray-400 mt-1">Sales</span>
+                </div>
+                <div className="absolute top-10 right-10 w-20 h-20 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border border-gray-700">
+                  <ShieldCheck className="w-6 h-6 text-purple-400" />
+                  <span className="text-[10px] text-gray-400 mt-1">Risk</span>
+                </div>
+                <div className="absolute bottom-10 w-20 h-20 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border border-gray-700">
+                  <FileCheck className="w-6 h-6 text-green-400" />
+                  <span className="text-[10px] text-gray-400 mt-1">KYC</span>
+                </div>
+
+                {/* Connection Lines (Simulated with CSS) */}
+                <div className="absolute w-full h-full border border-dashed border-gray-700 rounded-full opacity-30 animate-spin-slow"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -309,7 +309,7 @@ export default function HomePage() {
       <section className="py-24 px-4 bg-gray-900 relative overflow-hidden">
         {/* Background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[100px]"></div>
-        
+
         <div className="container mx-auto text-center relative z-10">
           <div className="space-y-8 max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
@@ -319,8 +319,8 @@ export default function HomePage() {
               See the Agentic AI Controller in action as it handles a complete loan lifecycle from start to finish.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-white !text-black hover:bg-gray-100 h-14 px-10 text-lg font-bold shadow-xl transition-transform hover:scale-105"
                 onClick={() => router.push('/demo')}
               >
