@@ -2,28 +2,33 @@
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
-from app.tools.loan_math import banking_tools
+from app.tools.loan_math import banking_tools as loan_tools
+from app.tools.investment_math import investment_tools
 
 load_dotenv()
+
+all_tools = loan_tools + investment_tools
 
 class FinancialAgent:
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("GEMINI_API_KEY missing in .env")
-            
         genai.configure(api_key=api_key)
         
         self.model = genai.GenerativeModel(
-            # CHANGED LINE BELOW:
             model_name='gemini-flash-latest', 
-            tools=banking_tools,
+            tools=all_tools,  
             system_instruction="""
-                You are FinBot, a helpful banking assistant.
-                - USE 'calculate_loan_emi' for ANY math queries regarding loans.
-                - Do not hallucinate numbers.
-                - Keep answers concise and strictly financial.
-                - End with a disclaimer: "Consult your bank for final details."
+                You are FinBot, an expert banking assistant.
+                
+                YOUR TOOLS:
+                1. Loans: Use 'calculate_loan_emi' for EMI queries.
+                2. Investments: Use 'calculate_sip' for monthly investment queries.
+                3. Fixed Deposits: Use 'calculate_fd' for one-time deposit queries.
+                
+                RULES:
+                - Detect the user's intent carefully (Loan vs Investment).
+                - Use the correct tool. Do not guess math.
+                - Keep answers concise.
             """
         )
 
