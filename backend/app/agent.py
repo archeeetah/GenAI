@@ -1,48 +1,37 @@
+# app/agent.py
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 
 # --- Import Tools ---
-# Ensure these files exist in app/tools/
 from app.tools.loan_math import banking_tools 
 from app.tools.investment_math import investment_tools
 
 load_dotenv()
 
-# Combine all tools into a single list for the model
+# Define global tools
 all_tools = banking_tools + investment_tools
 
 class FinancialAgent:
     def __init__(self):
-        # 1. Load API Key
         self.api_key = os.getenv("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY missing in .env file")
 
-        # 2. Configure Gemini
         genai.configure(api_key=self.api_key)
 
-        # 3. Define the Persona (System Instructions)
         self.system_instruction = """
         You are FinBot, an expert Banking & Financial Assistant.
-
         YOUR CAPABILITIES:
-        1. LOAN ADVISOR: Calculate EMIs, explain interest rates. 
-           - USE tool 'calculate_loan_emi' for math.
-        2. INVESTMENT ADVISOR: Calculate returns on SIPs and FDs.
-           - USE tool 'calculate_sip' for monthly investments.
-           - USE tool 'calculate_fd' for one-time deposits.
-        3. LEGAL ANALYST: You can analyze summary text of documents for risks.
-
+        1. LOAN ADVISOR: Calculate EMIs, explain interest rates. (Use 'calculate_loan_emi')
+        2. INVESTMENT ADVISOR: Calculate SIPs/FDs. (Use 'calculate_sip', 'calculate_fd')
+        3. LEGAL ANALYST: Analyze documents (PDFs/Images) for financial risk.
+        
         RULES:
-        - NEVER guess mathematical values. Always use the provided tools.
-        - If the user's query is vague (e.g., "I want a loan"), ask for details: Amount, Rate, Tenure.
-        - Be concise, professional, and trustworthy.
-        - ALWAYS end with a disclaimer: "Please consult your bank for the final offer."
+        - NEVER guess math. Use tools.
+        - When analyzing documents, look for "Fine Print", "Hidden Charges", and "Predatory Clauses".
         """
 
-        # 4. Initialize Model
-        # using 'gemini-flash-latest' for speed and stability
         self.model = genai.GenerativeModel(
             model_name='gemini-flash-latest', 
             tools=all_tools,
@@ -50,42 +39,45 @@ class FinancialAgent:
         )
 
     def get_response(self, user_text: str):
-        """
-        Handles standard chat queries (Loans/Investments).
-        """
         try:
-            # Start a chat session with automatic function calling
             chat = self.model.start_chat(enable_automatic_function_calling=True)
             response = chat.send_message(user_text)
             return response.text
         except Exception as e:
             return f"AI Error: {str(e)}"
 
-    def analyze_document(self, doc_text: str):
+    def analyze_document(self, file_bytes: bytes, mime_type: str):
         """
-        Specialized method for analyzing Legal/Loan documents.
+        Sends the RAW file (Image or PDF) to Gemini Vision.
+        This supports Scanned PDFs, JPGs, PNGs, and Native PDFs.
         """
         try:
-            analysis_prompt = f"""
+            prompt = """
             ACT AS: Senior Legal Risk Analyst.
+            TASK: Audit this uploaded document (which may be an image or scan).
             
-            TASK: Analyze the extracted text from a loan/financial document below.
+            EXTRACT AND ANALYZE:
+            1. Identify the Document Type (e.g., Loan Agreement, Bank Statement, Tax Invoice).
+            2. OCR & Read specific numbers: Interest Rates, Penalty Percentages, Dates.
+            3. FLAG RISKS:
+               - Hidden Fees (Processing fees, upfront charges).
+               - Variable Interest Rate clauses.
+               - Strict Default/Foreclosure conditions.
             
-            LOOK FOR:
-            1. Hidden Fees or Charges.
-            2. Variable/Floating Interest Rate clauses.
-            3. Strict Default/Foreclosure conditions.
-            4. Pre-payment penalties.
-
-            DOCUMENT TEXT:
-            {doc_text[:30000]} 
-
             OUTPUT:
-            Provide a structured summary pointing out 'High Risk', 'Medium Risk', or 'Safe' clauses.
+            Return a JSON structure with keys: "doc_type", "risk_level" (Low/Med/High), "summary", "flagged_clauses" (list).
             """
+
+            content = [
+                prompt,
+                {
+                    "mime_type": mime_type,
+                    "data": file_bytes
+                }
+            ]
             
-            # We generate content directly (no tools needed for text analysis)
-            response = self.model.generate_content(analysis_prompt)
+            response = self.model.generate_content(content)
             return response.text
+            
         except Exception as e:
-            return f"Analysis Error: {str(e)}"
+            return f"Vision Analysis Error: {str(e)}"
