@@ -49,13 +49,17 @@ def chat_endpoint(request: ChatRequest):
 
         # 4. Call Agent WITH History
         # We modify agent.get_response to accept history
-        bot_reply = agent.get_response(current_message, history=gemini_history)
+        bot_reply_text, agent_name, process_msg = agent.get_response(current_message, history=gemini_history)
         
-        # 5. Save the Conversation to DB
-        save_chat_entry(user_id, "user", request.message) # Save original clean message
-        save_chat_entry(user_id, "model", bot_reply)
+        # Save to DB (only text)
+        save_chat_entry(user_id, "user", request.message)
+        save_chat_entry(user_id, "model", bot_reply_text)
         
-        return ChatResponse(response=bot_reply)
+        return ChatResponse(
+            response=bot_reply_text,
+            agent_used=agent_name,      
+            process_log=process_msg     
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
