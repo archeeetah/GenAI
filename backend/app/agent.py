@@ -6,8 +6,7 @@ from dotenv import load_dotenv
 # --- Import Tools ---
 from app.tools.loan_math import banking_tools 
 from app.tools.investment_math import investment_tools
-from app.tools.eligibility import eligibility_tools
-from app.tools.bank_data import bank_comparison_tools  
+from app.tools.eligibility import eligibility_tools  
 from app.tools.bank_data import bank_data_tools
 
 load_dotenv()
