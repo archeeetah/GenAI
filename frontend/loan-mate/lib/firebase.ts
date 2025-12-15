@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -27,5 +28,8 @@ if (googleProvider) {
     prompt: 'select_account'
   });
 }
+
+// Initialize Cloud Firestore and get a reference to the service
+export const db = app ? getFirestore(app) : null;
 
 export default app;
