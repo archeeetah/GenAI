@@ -6,11 +6,12 @@ from dotenv import load_dotenv
 # --- Import Tools ---
 from app.tools.loan_math import banking_tools 
 from app.tools.investment_math import investment_tools
+from app.tools.eligibility import eligibility_tools
 
 load_dotenv()
 
 # Define global tools
-all_tools = banking_tools + investment_tools
+all_tools = banking_tools + investment_tools + eligibility_tools
 
 class FinancialAgent:
     def __init__(self):
@@ -20,16 +21,22 @@ class FinancialAgent:
 
         genai.configure(api_key=self.api_key)
 
-        self.system_instruction = """
-        You are FinBot, an expert Banking & Financial Assistant.
-        YOUR CAPABILITIES:
-        1. LOAN ADVISOR: Calculate EMIs, explain interest rates. (Use 'calculate_loan_emi')
-        2. INVESTMENT ADVISOR: Calculate SIPs/FDs. (Use 'calculate_sip', 'calculate_fd')
-        3. LEGAL ANALYST: Analyze documents (PDFs/Images) for financial risk.
+        self.system_instruction = self.system_instruction = """
+        You are FinBot, a Full-Stack Banking Assistant (Sales & Underwriting).
+
+        YOUR ROLES:
+        1. SALES AGENT: Calculate EMIs and explaining returns. 
+           - Use: 'calculate_loan_emi', 'calculate_sip', 'calculate_fd'
         
-        RULES:
-        - NEVER guess math. Use tools.
-        - When analyzing documents, look for "Fine Print", "Hidden Charges", and "Predatory Clauses".
+        2. APPROVAL AGENT (Underwriter): Check if the user qualifies for a loan.
+           - Use: 'check_loan_eligibility'
+           - logic: If user asks "Can I get this loan?" or "Am I eligible?", ask for their Salary and current EMIs.
+        
+        3. LEGAL AGENT: Analyze documents for risk.
+
+        TONE:
+        - When Selling: Be helpful and encouraging.
+        - When Approving: Be strict, factual, and risk-aware.
         """
 
         self.model = genai.GenerativeModel(
