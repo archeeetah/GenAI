@@ -1,0 +1,7 @@
+Bank_Name,Min_Interest_Rate,Max_Interest_Rate,Processing_Fee_Percent,Min_Tenure,Max_Tenure,Min_Loan_Amount,Max_Loan_Amount,Best_For_Segment
+SBI,8.50,9.15,0.00,1,30,100000,100000000,Salaried & Govt Employees
+HDFC Bank,8.75,9.40,0.50,1,25,200000,150000000,Fast Digital Process
+ICICI Bank,8.75,9.60,0.50,1,30,200000,200000000,Pre-approved Offers
+Axis Bank,8.85,9.50,0.75,1,25,300000,100000000,Self-Employed
+Kotak Mahindra,8.70,9.25,0.25,1,20,500000,50000000,Balance Transfer
+Punjab National Bank,8.60,9.10,0.10,1,30,100000,80000000,Low CIBIL Tolerance

@@ -1,0 +1,7 @@
+Bank_Name,NPA_Percent,Solvency_Ratio,Customer_Complaint_Ratio,Audit_Rating,Risk_Status
+SBI,0.67,88.5,Low,AAA,Safe
+HDFC Bank,0.40,92.0,Low,AAA,Safe
+ICICI Bank,0.55,89.2,Medium,AA+,Safe
+Axis Bank,0.90,85.0,Medium,AA,Moderate
+Kotak Mahindra,0.45,91.0,Low,AAA,Safe
+Punjab National Bank,1.20,80.5,High,BBB,High Risk (Check Audit)
