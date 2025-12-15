@@ -16,7 +16,7 @@ class FinancialAgent:
         
         self.model = genai.GenerativeModel(
             # CHANGED LINE BELOW:
-            model_name='gemini-2.0-flash', 
+            model_name='gemini-flash-latest', 
             tools=banking_tools,
             system_instruction="""
                 You are FinBot, a helpful banking assistant.
