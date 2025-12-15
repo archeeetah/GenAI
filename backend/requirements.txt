@@ -4,4 +4,6 @@ google-generativeai
 python-dotenv
 pydantic
 python-multipart   
-pypdf              
+pypdf       
+streamlit 
+requests       
