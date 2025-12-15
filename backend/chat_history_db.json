@@ -26,5 +26,31 @@
       "role": "model",
       "content": "EMI stands for **Equated Monthly Installment**.\n\nIt is a fixed payment amount that a borrower pays to a lender (like a bank) at a specified date each month. This payment covers both the **interest** on the loan and a portion of the **principal** (the original loan amount).\n\nHere is how it works:\n\n*   **Initial Payments:** A larger portion of the EMI goes towards paying the interest.\n*   **Later Payments:** As the loan term progresses and the principal balance reduces, a larger portion of the EMI goes towards repaying the principal.\n\nThe EMI is calculated based on the principal loan amount, the rate of interest, and the loan tenure (duration). If you need to calculate the EMI for a specific loan, I can use my `calculate_loan_emi` tool."
     }
+  ],
+  "test_user_streamlit": [
+    {
+      "role": "user",
+      "content": "tell me about emi"
+    },
+    {
+      "role": "model",
+      "content": "EMI stands for **Equated Monthly Installment**.\n\nIt is a fixed payment amount that a borrower pays to a lender (like a bank or financial institution) at a specified date each month until the loan is fully repaid.\n\n### What an EMI includes:\n\nEvery EMI payment is composed of two parts:\n\n1.  **Principal:** A portion of the original loan amount.\n2.  **Interest:** The finance charge on the outstanding principal balance.\n\nIn the initial years of a loan, the EMI largely consists of the **interest** component. As you pay down the principal, a greater share of your EMI payment goes toward reducing the **principal** in the later years.\n\n***\n\nAs a Data-Driven Banking Analyst, I have a built-in calculator to determine the exact EMI for any loan.\n\nIf you would like me to calculate your potential EMI, please provide me with:\n\n1.  **Principal (Loan Amount)**\n2.  **Annual Rate of Interest (%)**\n3.  **Tenure (in years)**"
+    },
+    {
+      "role": "user",
+      "content": "30k 7% 5yrs"
+    },
+    {
+      "role": "model",
+      "content": "For a loan of **\u20b930,000** at an annual interest rate of **7%** over a tenure of **5 years**, here is the breakdown:\n\n| Metric | Amount |\n| :--- | :--- |\n| **Equated Monthly Installment (EMI)** | **\u20b9594.04** |\n| Total Interest Paid | \u20b95,642.16 |\n| Total Repayment (Principal + Interest) | \u20b935,642.16 |\n\nThis means you would pay **\u20b9594.04** every month for 60 months (5 years)."
+    },
+    {
+      "role": "user",
+      "content": "i want to do kyc"
+    },
+    {
+      "role": "model",
+      "content": "System Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 28.795874393s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-2.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 28\n}\n]"
+    }
   ]
 }
