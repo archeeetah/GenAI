@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "./button"; // Assuming Navbar is in components folder, so ./button
+import { LogIn } from "lucide-react";
 
 export default function Navbar() {
+  const router = useRouter();
   return (
     <nav className="w-full flex justify-center mt-8 px-4">
       <div
@@ -11,18 +15,18 @@ export default function Navbar() {
         bg-transparent backdrop-blur-md 
         rounded-2xl 
         shadow-[0_12px_35px_rgba(37,99,235,0.25)] 
-        px-6 py-4 
+        px-8 md:px-12 py-4 
         flex items-center justify-between"
       >
-        
+
         {/* Left - Logo + Brand */}
         <div className="flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt="Loan Mate Logo"
-              width={40}
-              height={60}
-            />
+          <Image
+            src="/logo.png"
+            alt="Loan Mate Logo"
+            width={40}
+            height={60}
+          />
 
           <span className="text-xl font-semibold bg-gradient-to-r from-blue-700 via-blue-500 to-blue-400 bg-clip-text text-transparent">
             LoanMate
@@ -49,15 +53,27 @@ export default function Navbar() {
           ))}
         </div>
 
-
-          <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-md transition">
-            WhatsApp
-          </button>
-
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg transition">
-            Apply Now
-          </button>
+        {/* Right - Login Button */}
+        <div className="flex items-center">
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={async () => {
+              try {
+                // The original comment suggests dynamic import or using a hook.
+                // For now, we'll just redirect to a login page.
+                // If signInWithGoogle is to be called directly, ensure it's properly imported/available.
+                // const { signInWithGoogle } = await import('../lib/auth-context');
+                router.push('/login');
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          >
+            <LogIn className="w-4 h-4 mr-2" />
+            Login with Google
+          </Button>
         </div>
+      </div>
     </nav>
   );
 }

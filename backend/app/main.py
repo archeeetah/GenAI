@@ -3,8 +3,20 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from app.models import ChatRequest, ChatResponse
 from app.agent import FinancialAgent
 from app.memory import save_document_context, get_document_context, get_chat_history, save_chat_entry
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="FinBot Backend")
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Initialize the AI Agent
 agent = FinancialAgent()

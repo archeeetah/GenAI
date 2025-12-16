@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from 'react';
-import { doc, getDoc, DocumentData, collection, query, where, getDocs } from 'firebase/firestore';
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { doc, getDoc, DocumentData, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './auth-context';
 
@@ -9,12 +9,66 @@ import { useAuth } from './auth-context';
 interface FirestoreContextType {
     getUserDocument: (collectionName: string) => Promise<DocumentData | null>;
     getApplications: () => Promise<DocumentData[]>;
+    createApplication: (applicationId: string, initialData: any) => Promise<void>;
+    userData: DocumentData | null;
 }
 
 const FirestoreContext = createContext<FirestoreContextType | undefined>(undefined);
 
 export function FirestoreProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
+
+    const [userData, setUserData] = useState<DocumentData | null>(null);
+
+    // Ensure User Profile Exists & Listen for Realtime Updates
+    useEffect(() => {
+        if (!user || !db) {
+            setUserData(null);
+            return;
+        }
+
+        const userDocRef = doc(db, 'users', user.uid);
+
+        const ensureAndSubscribe = async () => {
+            // 1. Check if doc exists, if not create default
+            try {
+                const docSnap = await getDoc(userDocRef);
+                if (!docSnap.exists()) {
+                    const defaultProfile = {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName || 'User',
+                        preApprovedLoan: 0,
+                        activeApplications: 0,
+                        loanApplications: 0,
+                        creditScore: 0, // Default to 0, or 750 if preferred, sticking to 0 as "fresh"
+                        createdAt: new Date().toISOString()
+                    };
+                    const { setDoc } = await import('firebase/firestore');
+                    await setDoc(userDocRef, defaultProfile);
+                }
+            } catch (err) {
+                console.error("Error creating user profile:", err);
+            }
+
+            // 2. Set up Real-time Listener
+            const unsubscribe = onSnapshot(userDocRef, (doc) => {
+                if (doc.exists()) {
+                    setUserData(doc.data());
+                }
+            });
+
+            return unsubscribe;
+        };
+
+        const unsubscribePromise = ensureAndSubscribe();
+
+        return () => {
+            // Cleanup subscription
+            unsubscribePromise.then(unsub => unsub && unsub());
+        };
+
+    }, [user]);
 
     const getUserDocument = async (collectionName: string) => {
         if (!user || !db) return null;
@@ -54,9 +108,34 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const createApplication = async (applicationId: string, initialData: any) => {
+        if (!db || !user) return;
+        try {
+            const docRef = doc(db, "applications", applicationId);
+            // Check if it exists first to avoid overwriting if deemed necessary, 
+            // but for now we assume the caller handles the check or we just set it.
+            // Using setDoc with merge: true is safer if we just want to ensure it exists.
+            // But for a new application, assuming the ID is unique (session ID).
+            const { setDoc, updateDoc, increment } = await import('firebase/firestore');
+            await setDoc(docRef, initialData, { merge: true });
+
+            // Increment Open Applications count for the user
+            const userRef = doc(db, "users", user.uid);
+            // We use updateDoc because we know the user doc should exist (ensured by ensureUserProfile)
+            await updateDoc(userRef, {
+                loanApplications: increment(1)
+            });
+
+        } catch (error) {
+            console.error("Error creating application:", error);
+        }
+    };
+
     const value = {
         getUserDocument,
         getApplications,
+        createApplication,
+        userData // Export realtime data
     };
 
     return <FirestoreContext.Provider value={value}>{children}</FirestoreContext.Provider>;

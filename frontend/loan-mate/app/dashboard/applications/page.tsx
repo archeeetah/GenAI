@@ -3,7 +3,7 @@
 import { Card, CardContent } from "../../components/card";
 import { Badge } from "../../components/badge";
 import { Button } from "../../components/button";
-import { MoreHorizontal, Loader2 } from "lucide-react";
+import { Loader2, Eye, X, Circle } from "lucide-react"; // Added Eye, X, Circle
 import { useEffect, useState } from "react";
 import { useFirestore } from "../../../lib/firestore-context";
 import { useAuth } from "../../../lib/auth-context";
@@ -38,25 +38,16 @@ const formatDate = (dateVal: any) => {
 
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
-    // UPDATED: Darker green background with white text for better visibility
-    case "approved":
-      return "bg-green-600 text-white hover:bg-green-700";
-
-    case "rejected":
-      return "bg-red-600 text-white hover:bg-red-700";
-
-    case "closed":
-      return "bg-gray-600 text-white hover:bg-gray-700";
-
-    case "pending":
-      return "bg-yellow-600 text-white hover:bg-yellow-700";
-
-    default:
-      return "bg-gray-600 text-white hover:bg-gray-700";
+    case "approved": return "bg-green-600 text-white hover:bg-green-700";
+    case "rejected": return "bg-red-600 text-white hover:bg-red-700";
+    case "closed": return "bg-gray-600 text-white hover:bg-gray-700";
+    default: return "bg-gray-600 text-white hover:bg-gray-700";
   }
 };
 
-// 3. Loading Widget Component (New)
+// 3. Components
+
+// Loading Widget
 const LoadingWidget = () => {
   return (
     <div className="flex flex-col justify-center items-center py-16 space-y-4">
@@ -77,7 +68,6 @@ export default function ApplicationsPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.uid) return;
-
       try {
         setLoading(true);
         const data = await getApplications();
@@ -88,19 +78,18 @@ export default function ApplicationsPage() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [user, getApplications]);
 
+
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 relative">
       <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
 
       <Card className="border-none shadow-sm">
         <CardContent className="p-0">
-
           {loading ? (
-            // Using the new LoadingWidget here
             <LoadingWidget />
           ) : applications.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
@@ -115,7 +104,8 @@ export default function ApplicationsPage() {
                   <th className="px-6 py-4">Amount</th>
                   <th className="px-6 py-4">Date</th>
                   <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Action</th>
+                  {/* CHANGED: Header Name */}
+                  <th className="px-6 py-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -132,9 +122,15 @@ export default function ApplicationsPage() {
                         {app.status}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4">
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal size={16} />
+                    {/* CHANGED: Resume Chat Button */}
+                    <td className="px-6 py-4 text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                        onClick={() => window.location.href = `/chat?session_id=${app.applicationId}`}
+                      >
+                        Resume Chat
                       </Button>
                     </td>
                   </tr>
@@ -144,6 +140,8 @@ export default function ApplicationsPage() {
           )}
         </CardContent>
       </Card>
+
+
     </div>
   );
 }

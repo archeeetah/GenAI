@@ -4,10 +4,34 @@ import { Bot, LayoutDashboard, FileText, Wallet, History, Settings, LogOut, Bell
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "../components/button";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import React from "react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
    const router = useRouter();
    const pathname = usePathname();
+   const { user, loading, logout } = useAuth(); // destructure logout
+
+   // Protect route
+   React.useEffect(() => {
+      if (!loading && !user) {
+         router.replace('/login');
+      }
+   }, [user, loading, router]);
+
+   if (loading) {
+      return <div className="h-screen flex items-center justify-center">Loading...</div>;
+   }
+
+   if (!user) {
+      return null; // Will redirect
+   }
+
+   // Helper to get initials
+   const getInitials = (name: string | null | undefined) => {
+      if (!name) return "U";
+      return name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
+   }
 
    return (
       <div className="min-h-screen bg-gray-50 flex font-sans text-gray-900">
@@ -45,7 +69,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                      Monitoring Transactions
                   </div>
                </div>
-               <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => router.push('/')}>
+               <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" onClick={async () => {
+                  router.push('/');
+                  await logout();
+               }}>
                   <LogOut size={18} className="mr-2" />
                   Logout
                </Button>
@@ -63,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                      <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                   </button>
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-sm">
-                     RK
+                     {getInitials(user?.displayName)}
                   </div>
                </div>
             </header>
@@ -83,8 +110,8 @@ function SidebarItem({ icon: Icon, label, active, href }: any) {
       <Link
          href={href}
          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${active
-               ? "bg-blue-50 text-blue-600"
-               : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            ? "bg-blue-50 text-blue-600"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             }`}
       >
          <Icon size={18} />
