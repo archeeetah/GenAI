@@ -4,91 +4,99 @@ from app.models import ChatRequest, ChatResponse
 from app.agent import FinancialAgent
 from app.memory import save_document_context, get_document_context, get_chat_history, save_chat_entry
 
-app = FastAPI(title="Financial Bot API")
+app = FastAPI(title="FinBot Backend")
 
-# Initialize Agent
+# Initialize the AI Agent
 agent = FinancialAgent()
 
-@app.get("/history/{user_id}")
-
-def get_history_endpoint(user_id: str):
-    """Endpoint for Frontend to fetch past chats."""
-    return {"history": get_chat_history(user_id)}
-
-    
 @app.get("/")
 def health_check():
-    return {"status": "running", "service": "FinBot Backend"}
+    return {"status": "running", "service": "FinBot API"}
+
+@app.get("/history/{user_id}")
+def get_history_endpoint(user_id: str, session_id: str = None):
+    """
+    Fetch history for a user, optionally filtered by session_id.
+    """
+    return {"history": get_chat_history(user_id, session_id)}
 
 @app.post("/chat", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest):
     try:
-        user_id = request.user_id
+        # 1. Fetch Context (Current Session History)
+        raw_history = get_chat_history(request.user_id, request.session_id)
         
-        # 1. Fetch Past History (for Context)
-        raw_history = get_chat_history(user_id)
-        
-        # Convert to Gemini format: [{'role': 'user', 'parts': ['msg']}]
+        # Convert to Gemini format
         gemini_history = []
         for msg in raw_history:
-            # Map 'model' role to 'model' (Gemini uses 'model', our DB uses 'model')
             role = "user" if msg["role"] == "user" else "model"
             gemini_history.append({"role": role, "parts": [msg["content"]]})
 
-        # 2. Check for Document Context (Chat with PDF)
+        # 2. Check for Document Context
         doc_context = ""
         if request.doc_id:
             stored_doc = get_document_context(request.doc_id)
             if stored_doc:
-                doc_context = f"\n[DOCUMENT CONTEXT]: {stored_doc}\n"
+                doc_context = f"\n[CONTEXT FROM UPLOADED DOCUMENT]:\n{stored_doc}\n"
 
-        # 3. Construct the Message
-        # If we have history, Gemini handles context via history list.
-        # But we prepend doc_context to the CURRENT message if it exists.
+        # Combine Doc Context + User Message
         current_message = doc_context + request.message if doc_context else request.message
 
-        # 4. Call Agent WITH History
-        # We modify agent.get_response to accept history
+        # 3. Call Agent (Get Response + Metadata)
         bot_reply_text, agent_name, process_msg = agent.get_response(current_message, history=gemini_history)
         
-        # Save to DB (only text)
-        save_chat_entry(user_id, "user", request.message)
-        save_chat_entry(user_id, "model", bot_reply_text)
+        # 4. Save to DB with Session ID
+        save_chat_entry(request.user_id, "user", request.message, request.session_id)
+        save_chat_entry(request.user_id, "model", bot_reply_text, request.session_id)
         
         return ChatResponse(
             response=bot_reply_text,
-            agent_used=agent_name,      
-            process_log=process_msg     
+            agent_used=agent_name,
+            process_log=process_msg
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze-doc")
-async def analyze_document(file: UploadFile = File(...)):
-    # 1. Validate MIME Types (Now supports Images + PDF)
+@app.post("/upload-doc")
+async def upload_document_for_chat(file: UploadFile = File(...)):
+    """
+    Uploads a doc, extracts text via Vision, saves to memory.
+    """
     allowed_types = ["application/pdf", "image/jpeg", "image/png", "image/webp"]
-    
     if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Invalid file type. Allowed: {allowed_types}"
-        )
+        raise HTTPException(status_code=400, detail="Invalid file type.")
 
     try:
-        # 2. Read Raw Bytes
         file_bytes = await file.read()
+        extracted_text = agent.extract_content_from_file(file_bytes, file.content_type)
+        new_doc_id = save_document_context(extracted_text)
         
-        # 3. Send to Agent (Vision)
-        # We pass bytes and mime_type directly. No pypdf needed.
+        return {
+            "status": "success",
+            "doc_id": new_doc_id,
+            "preview": extracted_text[:100] + "..."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze-doc")
+async def analyze_document(file: UploadFile = File(...)):
+    """
+    One-off Legal Audit endpoint.
+    """
+    allowed_types = ["application/pdf", "image/jpeg", "image/png", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type.")
+
+    try:
+        file_bytes = await file.read()
         analysis_result = agent.analyze_document(file_bytes, file.content_type)
         
         return {
             "filename": file.filename,
-            "content_type": file.content_type,
             "analysis": analysis_result
         }
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
