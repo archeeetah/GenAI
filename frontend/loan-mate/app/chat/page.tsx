@@ -17,7 +17,7 @@ interface Message {
     agentName?: string;
 }
 
-export default function ChatPage() {
+function ChatContent() {
     const { user, loading } = useAuth();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -327,5 +327,13 @@ export default function ChatPage() {
                 </div>
             </footer>
         </div>
+    );
+}
+
+export default function ChatPage() {
+    return (
+        <React.Suspense fallback={<div className="flex h-screen items-center justify-center bg-gray-50">Loading Chat...</div>}>
+            <ChatContent />
+        </React.Suspense>
     );
 }
