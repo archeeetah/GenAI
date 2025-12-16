@@ -5,16 +5,16 @@ import { getFirestore } from 'firebase/firestore';
 // Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: "genai-d1e91.firebaseapp.com",
-  projectId: "genai-d1e91",
-  storageBucket: "genai-d1e91.appspot.com",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase only if it hasn't been initialized and we have a valid API key
 let app;
-if (typeof window !== 'undefined' && !getApps().length && firebaseConfig.apiKey && firebaseConfig.apiKey !== 'your_api_key_here') {
+if (typeof window !== 'undefined' && !getApps().length) {
   app = initializeApp(firebaseConfig);
 }
 

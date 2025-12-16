@@ -8,6 +8,7 @@ import { useAuth } from '../lib/auth-context';
 import {
   Bot,
   BrainCircuit,
+  LayoutDashboard,
   FileCheck,
   ShieldCheck,
   Cpu,
@@ -91,7 +92,7 @@ export default function HomePage() {
 
       {/* --- NAVBAR --- */}
       <nav className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => router.push('/')}
@@ -129,19 +130,11 @@ export default function HomePage() {
             ) : (
               <>
                 <Button
-                  variant="ghost"
-                  className="text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200"
                   onClick={() => router.push('/login')}
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Login
-                </Button>
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => router.push('/signup')}
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Sign Up
+                  Login with Google
                 </Button>
               </>
             )}
@@ -150,7 +143,7 @@ export default function HomePage() {
       </nav>
 
       {/* --- HERO SECTION --- */}
-      <section className="bg-white pt-20 pb-24 px-4 overflow-hidden relative">
+      <section className="bg-white pt-20 pb-24 px-6 md:px-12 overflow-hidden relative">
         {/* Background Grid Pattern */}
         <div className="absolute inset-0 z-0 opacity-[0.03]"
           style={{ backgroundImage: 'radial-gradient(#4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
@@ -182,6 +175,16 @@ export default function HomePage() {
                   Try Live Demo
                 </Button>
 
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-white hover:bg-gray-50 text-gray-700 border-gray-200 h-12 px-8 text-base hover:text-blue-600 transition-all"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  <LayoutDashboard className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+
               </div>
 
               <div className="flex items-center gap-6 text-sm font-medium text-gray-500 pt-4">
@@ -205,7 +208,7 @@ export default function HomePage() {
       </section>
 
       {/* --- SYSTEM CAPABILITIES SECTION --- */}
-      <section className="py-24 px-4 bg-gray-50">
+      <section className="py-24 px-6 md:px-12 bg-gray-50">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -241,7 +244,7 @@ export default function HomePage() {
       </section>
 
       {/* --- AGENT ARCHITECTURE SECTION --- */}
-      <section className="py-24 px-4 bg-white border-y border-gray-100">
+      <section className="py-24 px-6 md:px-12 bg-white border-y border-gray-100">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
@@ -306,7 +309,7 @@ export default function HomePage() {
       </section>
 
       {/* --- CTA SECTION --- */}
-      <section className="py-24 px-4 bg-gray-900 relative overflow-hidden">
+      <section className="py-24 px-6 md:px-12 bg-gray-900 relative overflow-hidden">
         {/* Background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[100px]"></div>
 
@@ -322,7 +325,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 className="bg-white !text-black hover:bg-gray-100 h-14 px-10 text-lg font-bold shadow-xl transition-transform hover:scale-105"
-                onClick={() => router.push('/demo')}
+                onClick={() => router.push('/chat')}
               >
                 Launch Application
                 <ChevronRight className="w-5 h-5 ml-2" />

@@ -17,20 +17,20 @@ interface ApplicationData {
 export default function OverviewPage() {
    const router = useRouter();
    const [loading, setLoading] = useState(false);
-   const [loanData, setLoanData] = useState<ApplicationData | null>(null);
    const { user } = useAuth();
-   const { getUserDocument } = useFirestore();
+   const { userData } = useFirestore(); // Use realtime data
+
+   // Map firestore data to local interface if needed, or just use userData directly
+   const loanData = userData ? {
+      limit: userData.preApprovedLoan || 0,
+      open: userData.loanApplications || 0,
+      active: userData.activeApplications || 0
+   } : null;
 
    useEffect(() => {
-      setLoading(true);
-      // Fetch user specific stats (limit, score, active loans)
-      getUserDocument('users').then((doc) => {
-         if (doc) {
-            setLoanData(doc as ApplicationData);
-         }
-         setLoading(false);
-      });
-   }, [getUserDocument]);
+      // Just for initial loading state if needed, but userData updates automatically
+      if (userData) setLoading(false);
+   }, [userData]);
 
    // Helper to format currency
    const formatCurrency = (amount: number) => {
@@ -81,31 +81,24 @@ export default function OverviewPage() {
                </CardContent>
             </Card>
 
-            {/* CARD 2: CREDIT SCORE */}
+            {/* CARD 2: OPEN APPLICATIONS */}
             <Card className="border-none shadow-sm bg-white">
                <CardContent className="p-6 pt-6">
                   <div className="flex justify-between items-start mb-4">
                      <div>
-                        <p className="text-gray-500 text-sm font-medium">Credit Score</p>
-                        {/* Fallback to 0 if no score */}
+                        <p className="text-gray-500 text-sm font-medium">Open Applications</p>
+                        {/* Fallback to 0 */}
                         <h3 className="text-3xl font-bold text-gray-900">
-                           {loanData?.score || 0}
+                           {loanData?.open || 0}
                         </h3>
                      </div>
                      <div className="p-2 bg-green-50 rounded-lg text-green-600">
                         <TrendingUp size={20} />
                      </div>
                   </div>
-                  <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                     {/* Dynamic width based on score (assuming max 900) */}
-                     <div
-                        className="bg-green-500 h-full transition-all duration-1000"
-                        style={{ width: loanData?.score ? `${(loanData.score / 900) * 100}%` : '0%' }}
-                     ></div>
+                  <div className="text-xs text-green-600 mt-2 font-medium bg-green-50 w-fit px-2 py-1 rounded">
+                     In Progress
                   </div>
-                  <p className="text-xs text-green-600 mt-2 font-medium">
-                     {loanData?.score && loanData.score > 700 ? "Excellent • Top 10%" : "Update your profile"}
-                  </p>
                </CardContent>
             </Card>
 
