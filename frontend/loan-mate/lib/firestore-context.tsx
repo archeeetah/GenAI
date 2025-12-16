@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useState, useEffect, useCallback, useMemo } from 'react';
 import { doc, getDoc, DocumentData, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './auth-context';
@@ -70,7 +70,7 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
 
     }, [user]);
 
-    const getUserDocument = async (collectionName: string) => {
+    const getUserDocument = useCallback(async (collectionName: string) => {
         if (!user || !db) return null;
 
         try {
@@ -86,10 +86,10 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
             console.error("Error fetching user document:", error);
             return null;
         }
-    };
+    }, [user]);
 
     // 2. Updated Function: No params, auto-injects doc ID as applicationId
-    const getApplications = async () => {
+    const getApplications = useCallback(async () => {
         if (!db || !user) return [];
 
         try {
@@ -106,9 +106,9 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
             console.error("Error querying documents:", error);
             return [];
         }
-    };
+    }, [user]);
 
-    const createApplication = async (applicationId: string, initialData: any) => {
+    const createApplication = useCallback(async (applicationId: string, initialData: any) => {
         if (!db || !user) return;
         try {
             const docRef = doc(db, "applications", applicationId);
@@ -129,7 +129,7 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error("Error creating application:", error);
         }
-    };
+    }, [user]);
 
     const value = {
         getUserDocument,
@@ -138,7 +138,10 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
         userData // Export realtime data
     };
 
-    return <FirestoreContext.Provider value={value}>{children}</FirestoreContext.Provider>;
+    // Memoize the value to ensure stability
+    const memoizedValue = useMemo(() => value, [getUserDocument, getApplications, createApplication, userData]);
+
+    return <FirestoreContext.Provider value={memoizedValue}>{children}</FirestoreContext.Provider>;
 }
 
 export function useFirestore() {
