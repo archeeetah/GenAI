@@ -3,7 +3,7 @@ import json
 import os
 import uuid
 
-# --- 1. DOCUMENT MEMORY (Existing) ---
+# --- DOCUMENT MEMORY ---
 document_store = {}
 
 def save_document_context(text: str) -> str:
@@ -14,11 +14,10 @@ def save_document_context(text: str) -> str:
 def get_document_context(doc_id: str) -> str:
     return document_store.get(doc_id, "")
 
-# --- 2. CHAT HISTORY MEMORY (New) ---
+# --- CHAT HISTORY MEMORY ---
 HISTORY_FILE = "chat_history_db.json"
 
 def _load_db():
-    """Helper to load the JSON database."""
     if not os.path.exists(HISTORY_FILE):
         return {}
     try:
@@ -28,26 +27,35 @@ def _load_db():
         return {}
 
 def _save_db(data):
-    """Helper to save to JSON database."""
     with open(HISTORY_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
-def get_chat_history(user_id: str) -> list:
-    """Returns the list of messages for a specific user."""
+def get_chat_history(user_id: str, session_id: str = None) -> list:
+    """
+    Returns history. Filters by session_id if provided.
+    """
     db = _load_db()
-    return db.get(user_id, [])
+    user_history = db.get(user_id, [])
+    
+    if session_id:
+        # Filter for specific session
+        return [msg for msg in user_history if msg.get("session_id") == session_id]
+    
+    return user_history
 
-def save_chat_entry(user_id: str, role: str, message: str):
-    """Appends a new message (User or Model) to the history."""
+def save_chat_entry(user_id: str, role: str, message: str, session_id: str):
+    """
+    Saves message with Session ID.
+    """
     db = _load_db()
     
     if user_id not in db:
         db[user_id] = []
         
-    # Append new message
     db[user_id].append({
-        "role": role, # 'user' or 'model'
-        "content": message
+        "role": role,
+        "content": message,
+        "session_id": session_id
     })
     
     _save_db(db)

@@ -1,3 +1,4 @@
+# streamlit_app.py
 import streamlit as st
 import requests
 import json
@@ -10,7 +11,9 @@ st.set_page_config(page_title="FinBot Banking Assistant", page_icon="🏦", layo
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "session_id" not in st.session_state:
-    st.session_state.session_id = "test_user_streamlit"
+    st.session_state.session_id = "session_01"  # Default Session
+if "user_id" not in st.session_state:
+    st.session_state.user_id = "user_123"       # Default User
 if "current_doc_id" not in st.session_state:
     st.session_state.current_doc_id = None
 
@@ -18,17 +21,22 @@ if "current_doc_id" not in st.session_state:
 with st.sidebar:
     st.header("⚙️ Control Panel")
     
-    # 1. User Session Management
-    st.subheader("👤 User Session")
-    user_input = st.text_input("User ID", value=st.session_state.session_id)
-    if user_input:
-        st.session_state.session_id = user_input
-        
+    # 1. User & Session Management
+    st.subheader("👤 Identity")
+    user_input = st.text_input("User ID", value=st.session_state.user_id)
+    session_input = st.text_input("Session ID", value=st.session_state.session_id)
+    
+    # Update State if changed
+    if user_input: st.session_state.user_id = user_input
+    if session_input: st.session_state.session_id = session_input
+
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Load History"):
+            # Fetch history for specific User + Session
             try:
-                res = requests.get(f"{API_URL}/history/{st.session_state.session_id}")
+                params = {"session_id": st.session_state.session_id}
+                res = requests.get(f"{API_URL}/history/{st.session_state.user_id}", params=params)
                 if res.status_code == 200:
                     history_data = res.json().get("history", [])
                     st.session_state.messages = history_data
@@ -103,9 +111,10 @@ if mode in ["Standard Banking Chat", "Chat with Document"]:
 
         # B. Prepare API Payload
         payload = {
-            "user_id": st.session_state.session_id,
+            "user_id": st.session_state.user_id,
+            "session_id": st.session_state.session_id,  # Sending Session ID
             "message": prompt,
-            "history": []  # API handles history loading internally now
+            "history": [] 
         }
         
         # Inject Doc ID if valid
