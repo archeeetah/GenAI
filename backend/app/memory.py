@@ -4,6 +4,7 @@ from firebase_admin import credentials, firestore
 import os
 import json
 import uuid
+from datetime import datetime, timezone
 
 # --- 1. INITIALIZE FIREBASE (Robust Setup) ---
 def initialize_firebase():
@@ -92,7 +93,7 @@ def save_chat_entry(user_id: str, role: str, message: str, session_id: str):
         new_message = {
             "role": role,
             "content": message,
-            "timestamp": firestore.SERVER_TIMESTAMP
+            "timestamp": datetime.now(timezone.utc)
         }
 
         # Atomic update (ArrayUnion)
