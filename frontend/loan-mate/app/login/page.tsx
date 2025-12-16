@@ -17,7 +17,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithGoogle();
-      router.push('/'); // Redirect to home page after successful sign in
+      router.push('/dashboard'); // Redirect to home page after successful sign in
     } catch (error) {
       console.error('Sign in error:', error);
       // You can add error handling UI here
@@ -30,7 +30,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 z-0 opacity-[0.03]"
-           style={{ backgroundImage: 'radial-gradient(#4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+        style={{ backgroundImage: 'radial-gradient(#4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       </div>
 
       {/* Brand Header */}
