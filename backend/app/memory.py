@@ -1,9 +1,9 @@
 # app/memory.py
-import json
+import pickle
 import os
 import uuid
 
-# --- DOCUMENT MEMORY ---
+# --- DOCUMENT MEMORY (In-Memory) ---
 document_store = {}
 
 def save_document_context(text: str) -> str:
@@ -14,21 +14,24 @@ def save_document_context(text: str) -> str:
 def get_document_context(doc_id: str) -> str:
     return document_store.get(doc_id, "")
 
-# --- CHAT HISTORY MEMORY ---
-HISTORY_FILE = "chat_history_db.json"
+# --- CHAT HISTORY MEMORY (Using Pickle) ---
+HISTORY_FILE = "chat_history_db.pkl"  # Changed extension to .pkl
 
 def _load_db():
+    """Loads chat history from a binary Pickle file."""
     if not os.path.exists(HISTORY_FILE):
         return {}
     try:
-        with open(HISTORY_FILE, "r") as f:
-            return json.load(f)
-    except:
+        with open(HISTORY_FILE, "rb") as f:  # Read Binary ('rb')
+            return pickle.load(f)
+    except (EOFError, pickle.UnpicklingError):
+        # Handle empty or corrupted files by returning a fresh dict
         return {}
 
 def _save_db(data):
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    """Saves chat history to a binary Pickle file."""
+    with open(HISTORY_FILE, "wb") as f:  # Write Binary ('wb')
+        pickle.dump(data, f)
 
 def get_chat_history(user_id: str, session_id: str = None) -> list:
     """
