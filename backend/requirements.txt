@@ -3,8 +3,8 @@ uvicorn
 google-generativeai
 python-dotenv
 pydantic
-python-multipart   
-pypdf       
-streamlit 
-requests       
+python-multipart
 pandas
+requests
+streamlit
+firebase-admin   
