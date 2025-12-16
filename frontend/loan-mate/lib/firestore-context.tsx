@@ -9,7 +9,8 @@ import { useAuth } from './auth-context';
 interface FirestoreContextType {
     getUserDocument: (collectionName: string) => Promise<DocumentData | null>;
     getApplications: () => Promise<DocumentData[]>;
-    createApplication: (applicationId: string, initialData: any) => Promise<void>;
+    getLoans: () => Promise<DocumentData[]>;
+    createApplication: (applicationId: string, initialData: DocumentData) => Promise<void>;
     userData: DocumentData | null;
 }
 
@@ -108,7 +109,7 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const createApplication = async (applicationId: string, initialData: any) => {
+    const createApplication = async (applicationId: string, initialData: DocumentData) => {
         if (!db || !user) return;
         try {
             const docRef = doc(db, "applications", applicationId);
@@ -131,9 +132,33 @@ export function FirestoreProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // 3. New Function: Fetch Approved Loans from Sub-collection
+    const getLoans = async () => {
+        if (!db || !user) return [];
+
+        try {
+            // Fetch from users/{uid}/loans
+            const loansRef = collection(db, "users", user.uid, "loans");
+            // Optionally order by date if you add indexing later
+            const q = query(loansRef);
+            const querySnapshot = await getDocs(q);
+
+            const docs = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            return docs;
+        } catch (error) {
+            console.error("Error fetching loans:", error);
+            return [];
+        }
+    };
+
     const value = {
         getUserDocument,
         getApplications,
+        getLoans, // Export getLoans
         createApplication,
         userData // Export realtime data
     };

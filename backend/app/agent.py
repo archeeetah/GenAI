@@ -8,11 +8,15 @@ from app.tools.investment_math import investment_tools
 from app.tools.eligibility import eligibility_tools
 from app.tools.bank_data import bank_data_tools 
 from app.tools.kyc_tools import kyc_tools
+from app.tools.application_tools import application_tools
+
+from app.memory import get_user_context 
+from app.tools.document_tools import document_tools
 
 load_dotenv()
 
 # --- Combine ALL tools into one global list ---
-all_tools = banking_tools + investment_tools + eligibility_tools + bank_data_tools + kyc_tools
+all_tools = banking_tools + investment_tools + eligibility_tools + bank_data_tools + kyc_tools + application_tools + document_tools
 
 class FinancialAgent:
     def __init__(self):
@@ -24,41 +28,51 @@ class FinancialAgent:
         # 2. Configure Gemini
         genai.configure(api_key=self.api_key)
 
-        # 3. Define the Master Persona (System Instructions)
+        # 3. Define the Master Persona (Bank Simulation)
         self.system_instruction = """
-        You are FinBot, an Advanced Banking AI Assistant.
-
-        YOUR AGENT PERSONAS & RESPONSIBILITIES:
+        You are LoanMate Bank's Advanced AI System. Uniquely, you simulate a real bank visit by switching between three distinct specialized personas based on the conversation stage.
         
-        1. **KYC OFFICER** (Priority: High):
-           - TRIGGER: User says "I want to do KYC" or "Verify my identity".
-           - ACTION: Collect Name, PAN, Aadhaar, Mobile, DOB one by one.
-           - TOOL: Use 'submit_kyc_application'.
-           - SECURITY: Never show full Aadhaar numbers in chat.
+        **SYSTEM CONTEXT**:
+        You will receive a [BANK RECORD] at the start of every message.
+        - It contains the user's Profile, Credit Score, Active Applications, and Verified Documents.
+        - USE THIS DATA. Do not ask for info you already have (e.g., if you see 'PAN Card' in Verified Vault, don't ask for it).
         
-        2. **MARKET ANALYST**:
-           - TRIGGER: User asks "Which bank is best?", "Compare rates", "Is Bank X safe?".
-           - ACTION: 
-             a. Call 'query_best_loan_offers' for rates.
-             b. Call 'check_bank_health' to verify safety/audit ratings.
-           - REQUIRED DISCLAIMER: End with "Note: Data is sourced from internal datasets. Verify with legal advisors."
+        **YOUR PERSONAS (STAGES):**
 
-        3. **LOAN & APPROVAL AGENT**:
-           - TRIGGER: User asks for EMI or "Can I get this loan?".
-           - ACTION: Use 'calculate_loan_emi' for math. Use 'check_loan_eligibility' for risk assessment.
-           - BEHAVIOR: Be strict about debt ratios (max 50% income).
+        ---
+        **STAGE 1: CUSTOMER EXECUTIVE (The Greeter)**
+        - **Role**: Receptionist / Front Desk.
+        - **Trigger**: New conversation, General inquiries, or when use is unsure.
+        - **Behavior**: Warm, welcoming. Identifies the user's need.
+        - **Handoff**:
+          - If user wants a Loan -> "I will connect you to our Loan Advisor, Mr. Smith."
+          - If user has specific query -> Answer directly.
 
-        4. **INVESTMENT ADVISOR**:
-           - TRIGGER: User asks about SIPs, FDs, or Returns.
-           - TOOL: Use 'calculate_sip' or 'calculate_fd'.
+        ---
+        **STAGE 2: LOAN ADVISOR (The Consultant)**
+        - **Role**: Expert Financial Advisor.
+        - **Trigger**: User discusses Loan Amount, EMI, Eligibility, or Interest Rates.
+        - **Actions**:
+          1. Discuss Needs: Amount, Tenure (Period), Purpose.
+          2. Check Eligibility: Use 'check_loan_eligibility' (Strict 50% debt ratio).
+          3. Manage Application: Use 'manage_application' to CREATE or UPDATE the application record aka "Opening a file".
+          4. Math: Use 'calculate_loan_emi'.
+        - **Handoff**: Once the user agrees to terms -> "Great. I am forwarding your file to our Verification Team to finalize the paperwork."
 
-        5. **LEGAL AUDITOR**:
-           - TRIGGER: User uploads a document.
-           - ACTION: Analyze for hidden fees and risks (handled via Vision capability).
+        ---
+        **STAGE 3: VERIFICATION OFFICER (The Auditor)**
+        - **Role**: Strict Documentation Specialist.
+        - **Trigger**: User agrees to loan terms, or uploads documents.
+        - **Actions**:
+          1. **Check Vault First**: Call 'check_available_documents'.
+          2. **Gap Analysis**: Tell user what you HAVE and what you NEED.
+          3. **Verify Uploads**: If user uploads a file, it is processed automatically. Call 'save_verified_document' to stamp it.
+          4. **Approval**: If all docs are present -> "Loan Approved. Disbursement in 24 hours."
 
-        GENERAL RULES:
-        - NEVER guess mathematical values. Always use the provided tools.
-        - Be professional, concise, and trustworthy.
+        **GENERAL RULES:**
+        - Stay in character.
+        - Be proactive. If you see a low credit score in the context, mention it politely as an Advisor.
+        - "Application Status" in the Context drives your behavior. If Status='In Progress', start as Advisor. 
         """
 
         # 4. Initialize Model with all tools
@@ -73,8 +87,8 @@ class FinancialAgent:
         Inspects the chat history to see which tool was called.
         Returns the 'Agent Name' and a 'Status Message' for the UI.
         """
-        agent_name = "General Banking Agent"
-        process_log = "Answering from general knowledge..."
+        agent_name = "Customer Executive"
+        process_log = "Reviewing your request..."
 
         try:
             # Look at the last few messages for function calls
@@ -86,46 +100,48 @@ class FinancialAgent:
                         if p.function_call:
                             fname = p.function_call.name
                             
-                            # Map Function Name -> Agent Persona
-                            if fname == 'submit_kyc_application':
-                                return "KYC Verification Agent", "Validating Identity Documents..."
+                            if fname in ['manage_application', 'calculate_loan_emi', 'check_loan_eligibility']:
+                                return "Loan Advisor", "Consulting financial models..."
                             
-                            elif fname == 'calculate_loan_emi':
-                                return "Loan Calculator Agent", "Executing EMI formulas..."
+                            elif fname in ['save_verified_document', 'check_available_documents', 'submit_kyc_application']:
+                                return "Verification Officer", "Verifying documents against vault..."
                             
-                            elif fname == 'check_loan_eligibility':
-                                return "Underwriting Agent", "Checking Salary vs. Debt Ratio..."
-                            
-                            elif fname == 'query_best_loan_offers':
-                                return "Market Research Agent", "Querying Bank Rates Database..."
-                            
-                            elif fname == 'check_bank_health':
-                                return "Risk & Audit Agent", "Scanning Solvency & NPA Reports..."
-                            
-                            elif fname in ['calculate_sip', 'calculate_fd']:
-                                return "Investment Advisor Agent", "Projecting Future Returns..."
+                            elif fname in ['query_best_loan_offers', 'check_bank_health']:
+                                return "Market Analyst", "Analyzing market data..."
                                 
         except Exception:
             pass
             
         return agent_name, process_log
 
-    def get_response(self, user_text: str, history: list = None):
+    def get_response(self, user_text: str, history: list = None, user_id: str = None, session_id: str = None):
         """
         Main chat method.
-        Returns: (Response Text, Agent Name, Process Log)
         """
         try:
+            # 1. Fetch Dynamic Context (The "Bank Record")
+            bank_record = get_user_context(user_id, session_id)
+            
+            # 2. Inject into Prompt
+            # We prepend it as a system note.
+            system_injection = f"""
+            [INTERNAL BANK RECORD]
+            {bank_record}
+            [END RECORD]
+            
+            User Message: {user_text}
+            """
+
             # Start chat with provided history
             chat = self.model.start_chat(
                 history=history if history else [],
                 enable_automatic_function_calling=True
             )
             
-            # 1. Send Message
-            response = chat.send_message(user_text)
+            # 3. Send Message
+            response = chat.send_message(system_injection)
             
-            # 2. Detect which agent worked
+            # 4. Detect which agent worked
             agent_name, log = self._detect_agent_activity(chat)
             
             return response.text, agent_name, log

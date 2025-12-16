@@ -96,7 +96,6 @@ def save_chat_entry(user_id: str, role: str, message: str, session_id: str):
             "timestamp": datetime.now(timezone.utc)
         }
 
-        # Atomic update (ArrayUnion)
         if not doc_ref.get().exists:
             doc_ref.set({"messages": [new_message]})
         else:
@@ -105,3 +104,70 @@ def save_chat_entry(user_id: str, role: str, message: str, session_id: str):
             })
     except Exception as e:
         print(f"Error saving chat: {e}")
+
+# --- 4. CONTEXT AGGREGATION (Bank Record) ---
+def get_user_context(user_id: str, session_id: str = None) -> str:
+    """
+    Fetches a holistic view of the user's relationship with the bank.
+    Includes: Profile Data, Active Application Status, and Verified Documents.
+    """
+    if not user_id:
+        return "User: Guest (No Records)"
+
+    context_str = f"USER ID: {user_id}\n"
+
+    try:
+        # A. Fetch Profile
+        user_doc = db.collection("users").document(user_id).get()
+        if user_doc.exists:
+            u_data = user_doc.to_dict()
+            context_str += f"PROFILE: Name={u_data.get('displayName', 'Unknown')}, " \
+                           f"CreditScore={u_data.get('creditScore', 'N/A')}, " \
+                           f"ActiveLoans={u_data.get('activeApplications', 0)}\n"
+        else:
+            context_str += "PROFILE: New Customer (No Profile)\n"
+
+        # B. Fetch Active Application (if session exists)
+        if session_id:
+            app_doc = db.collection("applications").document(session_id).get()
+            if app_doc.exists:
+                a_data = app_doc.to_dict()
+                context_str += f"CURRENT APPLICATION: Status='{a_data.get('status')}', " \
+                               f"Type='{a_data.get('type')}', Amount={a_data.get('amount')}\n"
+            else:
+                context_str += "CURRENT APPLICATION: None (Conversation just started)\n"
+
+        # C. Fetch Verified Docs
+        docs = db.collection("users").document(user_id).collection("documents").stream()
+        doc_names = [d.to_dict().get('type', 'Doc') for d in docs]
+        if doc_names:
+            context_str += f"VERIFIED VAULT: {', '.join(doc_names)}\n"
+        else:
+            context_str += "VERIFIED VAULT: Empty\n"
+
+        # D. Fetch Loan History (Approved/Closed)
+        loan_history = db.collection("users").document(user_id).collection("loans").order_by("date", direction=firestore.Query.DESCENDING).limit(5).stream()
+        loans_str = []
+        for l in loan_history:
+            d = l.to_dict()
+            loans_str.append(f"{d.get('type','Loan')} ({d.get('amount')}) - Status: {d.get('status')}")
+        
+        if loans_str:
+            context_str += f"LOAN HISTORY: {'; '.join(loans_str)}\n"
+            
+        # E. Fetch Payment History
+        pay_history = db.collection("users").document(user_id).collection("payments").order_by("date", direction=firestore.Query.DESCENDING).limit(3).stream()
+        pay_str = []
+        for p in pay_history:
+            d = p.to_dict()
+            pay_str.append(f"Paid {d.get('amount')} on {d.get('date').strftime('%Y-%m-%d') if d.get('date') else 'Unknown'}")
+            
+        if pay_str:
+            context_str += f"RECENT PAYMENTS: {'; '.join(pay_str)}\n"
+        else:
+            context_str += "RECENT PAYMENTS: None recorded.\n"
+
+    except Exception as e:
+        context_str += f"Error fetching records: {str(e)}"
+    
+    return context_str
