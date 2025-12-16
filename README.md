@@ -1,8 +1,7 @@
 # LoanMate - Agentic AI Banking Assistant 🏦
 
 > **Hackathon Submission:** [GenAI Frontiers: App Development using the Gemini API](https://unstop.com/hackathons/genai-frontiers-app-development-using-the-gemini-api-university-institute-of-engineering-chandigarh-universit-1603804)  
-> **Track:** Challenge II: Banking, Financial Services, and Insurance (BFSI) - Tata Capital  
-> **Team Name:** architabansall05
+> **Team Name:** Envision
 
 ## 📖 Project Overview
 **LoanMate** is an Agentic AI solution designed to automate the personal loan sales process for NBFCs. Built using the **Google Gemini API**, it acts as a **Master Agent** that intelligently orchestrates multiple specialized **Worker Agents** to handle the end-to-end customer journey—from the initial sales pitch to generating the final sanction letter.
