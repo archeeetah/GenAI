@@ -103,10 +103,10 @@ GenAI-main
 
 | Name | GitHub Profile |
 | :--- | :--- |
-| **[Nihal Basaniwal]** | [@username](https://github.com/nb2912) |
-| **[Archita Bansal]** | [@username](https://github.com/archeeetah) |
-| **[Krish D Shah]** | [@username](https://github.com/Krishdshah) |
-| **[Pranjal Garg]** | [@username](https://github.com/pranjal-garg) |
+| **[Nihal Basaniwal]** | [Click Here](https://github.com/nb2912) |
+| **[Archita Bansal]** | [Click Here](https://github.com/archeeetah) |
+| **[Krish D Shah]** | [Click Here](https://github.com/Krishdshah) |
+| **[Pranjal Garg]** | [Click Here](https://github.com/pranjal-garg) |
 
 ---
 
