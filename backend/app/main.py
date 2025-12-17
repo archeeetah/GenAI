@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="FinBot Backend")
 origins = [
     "http://localhost:3000",
-    "https://genai-mjy8.vercel.app/"
+    "https://genai-mjy8.vercel.app"
 ]
 
 app.add_middleware(
