@@ -1,0 +1,30 @@
+# Deployment Configuration Guide
+
+Yes, you **MUST** add your deployment URLs in two places:
+
+## 1. Firebase Console (Authentication)
+**Why?** To allow users to sign in from your Vercel-hosted frontend.
+
+1.  Go to [Firebase Console](https://console.firebase.google.com/).
+2.  Select your project (`genai`).
+3.  Navigate to **Authentication** > **Settings** > **Authorized Domains**.
+4.  Click **Add Domain**.
+5.  Add your Vercel URL (e.g., `loan-mate.vercel.app` or `your-project.vercel.app`).
+    *   *Note: `localhost` is already there for development.*
+
+## 2. Backend Code (CORS)
+**Why?** To allow your Vercel frontend to talk to your Railway backend.
+
+1.  Open [backend/app/main.py](file:///C:/Users/pranj/Desktop/Projects/GenAI/backend/app/main.py).
+2.  Update the `origins` list to include your **Frontend URL**:
+    ```python
+    origins = [
+        "http://localhost:3000",
+        "https://your-frontend-project.vercel.app" # <--- ADD THIS
+    ]
+    ```
+3.  **Redeploy Backend** to Railway after making this change.
+
+## Summary
+- **Firebase:** Add Vercel URL to Authorized Domains.
+- **Backend ([main.py](file:///C:/Users/pranj/Desktop/Projects/GenAI/backend/app/main.py)):** Add Vercel URL to `origins`.
