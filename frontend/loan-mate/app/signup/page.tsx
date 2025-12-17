@@ -30,7 +30,7 @@ export default function SignUpPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 z-0 opacity-[0.03]"
-           style={{ backgroundImage: 'radial-gradient(#4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+        style={{ backgroundImage: 'radial-gradient(#4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       </div>
 
       {/* Brand Header */}
@@ -39,7 +39,7 @@ export default function SignUpPage() {
           <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200/50">
             <Bot className="w-7 h-7 text-white" />
           </div>
-          <span className="text-3xl font-bold text-gray-900 tracking-tight">LoanMate</span>
+          <span className="text-3xl font-bold text-gray-900 tracking-tight">FinBot</span>
         </div>
         <p className="text-gray-600 text-lg">The Future of Agentic AI Lending</p>
       </div>

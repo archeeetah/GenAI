@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { Send, Bot, User, ArrowLeft, Paperclip, X, Loader2 } from 'lucide-react';
 import { sendMessage, getHistory, uploadDocument } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import { useFirestore } from '@/lib/firestore-context';
+
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
@@ -22,12 +22,12 @@ function ChatContent() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const [attachedDoc, setAttachedDoc] = useState<{ id: string; name: string } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { createApplication } = useFirestore();
     const searchParams = useSearchParams();
 
     // Generate a random session ID if one doesn't exist, or use the one from URL
@@ -40,19 +40,11 @@ function ChatContent() {
     useEffect(() => {
         if (user) {
             loadHistory(user.uid, sessionId);
-            // Create Application Record ONLY if logged in
-            createApplication(sessionId, {
-                uid: user.uid,
-                status: "In Progress",
-                date: new Date().toISOString(),
-                type: "New Loan Query",
-                amount: 0
-            });
         } else {
             // For guest, clear messages on mount/unmount or just let local state handle it.
             // We don't load history for guests (no persistent ID easily available without cookies, keeping it simple)
         }
-    }, [user, sessionId, createApplication]);
+    }, [user, sessionId]);
 
     // Removed the login guard block here. Guests can see the UI.
 
@@ -66,10 +58,17 @@ function ChatContent() {
                     content: msg.content,
                     timestamp: Date.now()
                 }));
-                setMessages(mappedMessages);
+
+                // Fix: Merge with pending local messages instead of overwriting
+                setMessages((prev) => {
+                    const localMessages = prev.filter(m => !m.id.startsWith('hist_'));
+                    return [...mappedMessages, ...localMessages];
+                });
             }
         } catch (e) {
             console.error("Failed to load history:", e);
+        } finally {
+            setIsHistoryLoading(false);
         }
     };
 
@@ -87,7 +86,8 @@ function ChatContent() {
         const file = e.target.files[0];
         setIsUploading(true);
         try {
-            const result = await uploadDocument(file);
+            const currentUserId = user ? user.uid : "guest_user";
+            const result = await uploadDocument(file, currentUserId);
             setAttachedDoc({ id: result.doc_id, name: file.name });
         } catch (error) {
             console.error('Failed to upload:', error);
@@ -172,7 +172,7 @@ function ChatContent() {
                             <Bot size={24} className="text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-800">AI Assistant</h1>
+                            <h1 className="text-xl font-bold text-gray-800">FinBot</h1>
                             <p className="text-sm text-green-600 flex items-center gap-1">
                                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                                 Always active
@@ -190,7 +190,12 @@ function ChatContent() {
             {/* Messages Area */}
             <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
                 <div className="max-w-3xl mx-auto space-y-6">
-                    {messages.length === 0 && (
+                    {isHistoryLoading ? (
+                        <div className="flex flex-col items-center justify-center h-full text-gray-400 py-20">
+                            <Loader2 className="w-8 h-8 animate-spin mb-2 text-blue-600" />
+                            <p>Loading conversation...</p>
+                        </div>
+                    ) : messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center text-gray-400 space-y-4">
                             <div className="bg-white p-6 rounded-full shadow-sm mb-4">
                                 <Bot size={64} className="text-blue-200" />
@@ -209,38 +214,37 @@ function ChatContent() {
                                 ))}
                             </div>
                         </div>
-                    )}
-
-                    {messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                            {msg.role === 'model' && (
-                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
-                                    <Bot size={16} className="text-white" />
-                                </div>
-                            )}
-
+                    ) : (
+                        messages.map((msg) => (
                             <div
-                                className={`max-w-[80%] md:max-w-[70%] rounded-2xl p-4 shadow-sm ${msg.role === 'user'
-                                    ? 'bg-blue-600 text-white rounded-tr-sm'
-                                    : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'
-                                    }`}
+                                key={msg.id}
+                                className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                                {msg.agentName && <p className="text-xs text-blue-600 font-semibold mb-1">{msg.agentName}</p>}
-                                <div className="leading-relaxed whitespace-pre-wrap prose prose-sm max-w-none">
-                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                                </div>
-                            </div>
+                                {msg.role === 'model' && (
+                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
+                                        <Bot size={16} className="text-white" />
+                                    </div>
+                                )}
 
-                            {msg.role === 'user' && (
-                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1">
-                                    <User size={16} className="text-gray-600" />
+                                <div
+                                    className={`max-w-[80%] md:max-w-[70%] rounded-2xl p-4 shadow-sm ${msg.role === 'user'
+                                        ? 'bg-blue-600 text-white rounded-tr-sm'
+                                        : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'
+                                        }`}
+                                >
+                                    {msg.agentName && <p className="text-xs text-blue-600 font-semibold mb-1">{msg.agentName}</p>}
+                                    <div className="leading-relaxed whitespace-pre-wrap prose prose-sm max-w-none">
+                                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+
+                                {msg.role === 'user' && (
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1">
+                                        <User size={16} className="text-gray-600" />
+                                    </div>
+                                )}
+                            </div>
+                        )))}
 
                     {isLoading && (
                         <div className="flex gap-4 justify-start">

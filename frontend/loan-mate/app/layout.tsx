@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LoanMate",
+  title: "FinBot",
   description: "Agentic AI Loan Application System",
 };
 

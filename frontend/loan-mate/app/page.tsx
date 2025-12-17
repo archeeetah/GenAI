@@ -100,7 +100,7 @@ export default function HomePage() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Bot className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">LoanMate</span>
+            <span className="text-xl font-bold text-gray-900 tracking-tight">FinBot</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -255,7 +255,7 @@ export default function HomePage() {
                 <div className="w-20 h-1.5 bg-blue-600 rounded-full"></div>
               </div>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Unlike traditional chatbots, LoanMate uses a <strong>Master-Worker</strong> architecture.
+                Unlike traditional chatbots, FinBot uses a <strong>Master-Worker</strong> architecture.
                 The Master Agent breaks down the loan process into atomic tasks and assigns them to specialized agents,
                 ensuring accuracy and modularity.
               </p>

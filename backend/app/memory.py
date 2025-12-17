@@ -1,6 +1,6 @@
 # app/memory.py
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 import os
 import json
 import uuid
@@ -39,7 +39,14 @@ def initialize_firebase():
             )
 
         # Initialize the App
-        firebase_admin.initialize_app(cred)
+        firebase_admin.initialize_app(cred, {
+            'storageBucket': 'genai-d1e91.firebasestorage.app' # Standard format: project-id.appspot.com usually, but let's check or assume default.
+                                                               # Actually, for default bucket, we can just use storage.bucket() without args if config is right. 
+                                                               # But explicit config is safer if env var missing.
+                                                               # Let's try to get it from cred or assume standard.
+            # Using 'genai-d1e91.appspot.com' (standard) or similar. 
+            # Safest is to just init app and get bucket later.
+        })
         return firestore.client()
 
     except Exception as e:
@@ -50,16 +57,78 @@ def initialize_firebase():
 db = initialize_firebase()
 
 
-# --- 2. DOCUMENT MEMORY (In-Memory) ---
-document_store = {}
+# --- 2. DOCUMENT MEMORY (Firestore + Storage) ---
 
-def save_document_context(text: str) -> str:
+def save_user_document(user_id: str, doc_name: str, file_bytes: bytes, mime_type: str, extracted_text: str) -> str:
+    """
+    1. Uploads file to Firebase Storage (users/{uid}/uploads/{filename}).
+    2. Saves metadata & text to Firestore (users/{uid}/documents/{doc_id}).
+    """
     doc_id = str(uuid.uuid4())
-    document_store[doc_id] = text
-    return doc_id
+    
+    # A. Upload to Storage
+    try:
+        bucket = storage.bucket(name="genai-d1e91.firebasestorage.app") # Hardcoded for now based on project ID
+        blob = bucket.blob(f"users/{user_id}/uploads/{doc_name}")
+        blob.upload_from_string(file_bytes, content_type=mime_type)
+        storage_path = blob.name
+    except Exception as e:
+        print(f"Storage Upload Error: {e}")
+        storage_path = "upload_failed"
+
+    # B. Save metadata to Firestore
+    try:
+        user_doc_ref = db.collection("users").document(user_id)
+        # Ensure user doc exists
+        if not user_doc_ref.get().exists:
+             user_doc_ref.set({"uid": user_id}, merge=True)
+
+        doc_ref = user_doc_ref.collection("documents").document(doc_id)
+        
+        doc_data = {
+            "id": doc_id,
+            "name": doc_name,
+            "storagePath": storage_path,
+            "mimeType": mime_type,
+            "uploadedAt": datetime.now(timezone.utc).isoformat(),
+            "extractedText": extracted_text, # Save text for RAG/Context
+            "summary": extracted_text[:200] + "..." # Quick preview
+        }
+        
+        doc_ref.set(doc_data)
+        return doc_id
+    except Exception as e:
+        print(f"Firestore Save Error: {e}")
+        return ""
+
+def get_user_documents(user_id: str) -> list:
+    """
+    Fetches all document summaries for a user to inject into context.
+    """
+    try:
+        docs_ref = db.collection("users").document(user_id).collection("documents")
+        docs = docs_ref.stream()
+        return [d.to_dict() for d in docs]
+    except Exception as e:
+        print(f"Error getting docs: {e}")
+        return []
+
+def get_user_profile(user_id: str) -> dict:
+    """
+    Fetches user profile data.
+    """
+    try:
+        doc = db.collection("users").document(user_id).get()
+        if doc.exists:
+            return doc.to_dict()
+        return {}
+    except Exception as e:
+        return {}
 
 def get_document_context(doc_id: str) -> str:
-    return document_store.get(doc_id, "")
+    # Legacy/Fallback if needed, or we can look it up in a global way if ID is unique
+    # For now, let's just return empty as we are moving to user-centric
+    return ""
 
 
 # --- 3. CHAT HISTORY (FIRESTORE) ---

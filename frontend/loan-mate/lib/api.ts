@@ -64,9 +64,10 @@ export async function getHistory(user_id: string, session_id?: string) {
     return response.json();
 }
 
-export async function uploadDocument(file: File) {
+export async function uploadDocument(file: File, user_id: string) {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('user_id', user_id);
 
     const response = await fetch(`${API_BASE_URL}/upload-doc`, {
         method: 'POST',

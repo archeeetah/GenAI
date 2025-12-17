@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
                   <Bot size={20} />
                </div>
-               <span className="text-xl font-bold tracking-tight">LoanMate</span>
+               <span className="text-xl font-bold tracking-tight">FinBot</span>
             </div>
 
             <nav className="flex-1 p-4 space-y-1">
