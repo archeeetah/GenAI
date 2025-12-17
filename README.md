@@ -4,14 +4,15 @@
 > **Team Name:** Envision
 
 ## 📖 Project Overview
-**LoanMate** is an Agentic AI solution designed to automate the personal loan sales process for NBFCs. Built using the **Google Gemini API**, it acts as a **Master Agent** that intelligently orchestrates multiple specialized **Worker Agents** to handle the end-to-end customer journey—from the initial sales pitch to generating the final sanction letter.
+**FinBot** is an Agentic AI solution designed to automate the personal loan sales process for NBFCs. Built using the **Google Gemini API**, it acts as a **Master Agent** that intelligently orchestrates multiple specialized **Worker Agents** to handle the end-to-end customer journey—from the initial sales pitch to generating the final sanction letter.
 
 This solution addresses the problem of scaling personalized sales interactions by simulating a human-like executive who can verify identities, assess credit risk, and close deals 24/7.
 
 ---
 
 ## 🏗️ Agentic AI Architecture
-We have implemented the **Master-Worker Agent** pattern as required by the challenge.
+We have implemented FinBot, an advanced, multimodal financial assistant designed to bridge the gap between static banking apps and human advisors.
+It consists of:
 
 ### 1. Master Agent (The Orchestrator)
 * **Role:** `FinancialAgent` (in `backend/app/agent.py`)
