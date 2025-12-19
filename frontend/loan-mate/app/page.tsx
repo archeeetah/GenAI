@@ -244,18 +244,7 @@ export default function HomePage() {
       </section>
 
       {/* --- TECH STACK STRIP --- */}
-      <div className="border-y border-gray-100 bg-gray-50/50 py-6 overflow-hidden">
-         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-6 md:gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-             <p className="text-sm font-semibold text-gray-500 whitespace-nowrap">POWERED BY</p>
-             <div className="flex flex-wrap justify-center gap-8 md:gap-12 items-center">
-                 {techStack.map((tech) => (
-                    <span key={tech} className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                       <CheckCircle2 className="w-4 h-4 text-blue-500" /> {tech}
-                    </span>
-                 ))}
-             </div>
-         </div>
-      </div>
+      
 
       {/* --- SYSTEM CAPABILITIES SECTION --- */}
       <section className="py-24 px-6 md:px-12 bg-white">
