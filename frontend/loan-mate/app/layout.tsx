@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../lib/auth-context";
-import { FirestoreProvider } from "../lib/firestore-context"; // <--- 1. Import this
+import { FirestoreProvider } from "../lib/firestore-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,9 +14,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// 1. Mobile & Brand Settings
+export const viewport: Viewport = {
+  themeColor: "#2563eb", // Matches your Brand Blue
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1, // Prevents auto-zoom on inputs in iOS
+};
+
+// 2. SEO & Title Settings
 export const metadata: Metadata = {
-  title: "FinBot",
-  description: "Agentic AI Loan Application System",
+  title: {
+    template: "%s | FinBot",
+    default: "FinBot - Agentic AI Lending",
+  },
+  description: "Experience fully autonomous multi-agent loan negotiation, verification, and underwriting.",
+  icons: {
+    icon: "/favicon.ico", // Ensure you have a favicon in your /public folder
+  },
 };
 
 export default function RootLayout({
@@ -25,9 +40,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 text-gray-900`}
       >
         {/* AuthProvider handles the user login state */}
         <AuthProvider>

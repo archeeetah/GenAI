@@ -3,17 +3,23 @@
 import { Card, CardContent } from "../../components/card";
 import { Badge } from "../../components/badge";
 import { Button } from "../../components/button";
-import { Loader2, Eye, X, Circle } from "lucide-react"; // Added Eye, X, Circle
+import { Loader2, FileText, ArrowRight } from "lucide-react"; 
 import { useEffect, useState } from "react";
 import { useFirestore } from "../../../lib/firestore-context";
 import { useAuth } from "../../../lib/auth-context";
+import Link from "next/link"; // Import Next.js Link
 
 // 1. Define Types
+interface FirestoreTimestamp {
+  seconds: number;
+  nanoseconds: number;
+}
+
 interface Application {
   applicationId: string;
   type: string;
   amount: number;
-  date: any;
+  date: FirestoreTimestamp | string | number | null; // More specific type
   status: string;
 }
 
@@ -26,22 +32,28 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const formatDate = (dateVal: any) => {
+const formatDate = (dateVal: Application['date']) => {
   if (!dateVal) return "N/A";
-  if (dateVal?.seconds) {
+  
+  // Handle Firestore Timestamp
+  if (typeof dateVal === 'object' && 'seconds' in dateVal) {
     return new Date(dateVal.seconds * 1000).toLocaleDateString("en-IN", {
       year: 'numeric', month: 'short', day: 'numeric'
     });
   }
-  return new Date(dateVal).toLocaleDateString("en-IN");
+  
+  // Handle standard Date strings/numbers
+  return new Date(dateVal as string | number).toLocaleDateString("en-IN", {
+      year: 'numeric', month: 'short', day: 'numeric'
+  });
 };
 
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
-    case "approved": return "bg-green-600 text-white hover:bg-green-700";
-    case "rejected": return "bg-red-600 text-white hover:bg-red-700";
-    case "closed": return "bg-gray-600 text-white hover:bg-gray-700";
-    default: return "bg-gray-600 text-white hover:bg-gray-700";
+    case "approved": return "bg-green-100 text-green-700 border border-green-200"; // Improved contrast
+    case "rejected": return "bg-red-100 text-red-700 border border-red-200";
+    case "closed": return "bg-gray-100 text-gray-700 border border-gray-200";
+    default: return "bg-blue-50 text-blue-700 border border-blue-100";
   }
 };
 
@@ -50,9 +62,9 @@ const getStatusColor = (status: string) => {
 // Loading Widget
 const LoadingWidget = () => {
   return (
-    <div className="flex flex-col justify-center items-center py-16 space-y-4">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-      <p className="text-sm text-gray-500 font-medium">Loading applications...</p>
+    <div className="flex flex-col justify-center items-center py-20 space-y-4" role="status">
+      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <p className="text-sm text-gray-500 font-medium animate-pulse">Fetching your applications...</p>
     </div>
   );
 };
@@ -81,67 +93,83 @@ export default function ApplicationsPage() {
     fetchData();
   }, [user, getApplications]);
 
-
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 relative">
-      <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
+    <div className="space-y-6 animate-in fade-in duration-500 relative max-w-6xl mx-auto p-4 md:p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
+        {/* Optional: Add a 'New Application' button here if needed */}
+      </div>
 
-      <Card className="border-none shadow-sm">
+      <Card className="border border-gray-200 shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {loading ? (
             <LoadingWidget />
           ) : applications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              No applications found.
+            <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+               <div className="bg-gray-100 p-4 rounded-full">
+                  <FileText className="h-8 w-8 text-gray-400" />
+               </div>
+               <div>
+                  <h3 className="text-lg font-medium text-gray-900">No applications found</h3>
+                  <p className="text-sm text-gray-500 mt-1">You haven't applied for any loans yet.</p>
+               </div>
+               <Link href="/chat">
+                 <Button className="mt-2">Start New Application</Button>
+               </Link>
             </div>
           ) : (
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 text-gray-500 uppercase font-bold text-xs">
-                <tr>
-                  <th className="px-6 py-4">S.No</th>
-                  <th className="px-6 py-4">Type</th>
-                  <th className="px-6 py-4">Amount</th>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4">Status</th>
-                  {/* CHANGED: Header Name */}
-                  <th className="px-6 py-4 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {applications.map((app, index) => (
-                  <tr key={app.applicationId} className="bg-white hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4">{app.type}</td>
-                    <td className="px-6 py-4">{formatCurrency(app.amount)}</td>
-                    <td className="px-6 py-4">{formatDate(app.date)}</td>
-                    <td className="px-6 py-4">
-                      <Badge className={getStatusColor(app.status)}>
-                        {app.status}
-                      </Badge>
-                    </td>
-                    {/* CHANGED: Resume Chat Button */}
-                    <td className="px-6 py-4 text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                        onClick={() => window.location.href = `/chat?session_id=${app.applicationId}`}
-                      >
-                        Resume Chat
-                      </Button>
-                    </td>
+            // RESPONSIVE WRAPPER: Makes table scrollable on mobile
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left whitespace-nowrap">
+                <thead className="bg-gray-50 text-gray-500 uppercase font-semibold text-xs border-b border-gray-200">
+                  <tr>
+                    <th scope="col" className="px-6 py-4">ID</th>
+                    <th scope="col" className="px-6 py-4">Type</th>
+                    <th scope="col" className="px-6 py-4">Amount</th>
+                    <th scope="col" className="px-6 py-4">Date Applied</th>
+                    <th scope="col" className="px-6 py-4">Status</th>
+                    <th scope="col" className="px-6 py-4 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {applications.map((app, index) => (
+                    <tr key={app.applicationId} className="bg-white hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-xs text-gray-500">
+                         #{app.applicationId.slice(0, 8)}...
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-900">{app.type}</td>
+                      <td className="px-6 py-4 text-gray-700 font-medium">{formatCurrency(app.amount)}</td>
+                      <td className="px-6 py-4 text-gray-500">{formatDate(app.date)}</td>
+                      <td className="px-6 py-4">
+                        <Badge className={`${getStatusColor(app.status)} shadow-none`}>
+                          {app.status}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {/* NAVIGATION FIX: Using Next.js Link instead of window.location */}
+                        <Link 
+                            href={`/chat?session_id=${app.applicationId}`}
+                            className="inline-block"
+                        >
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 gap-1"
+                              aria-label={`Resume application ${app.applicationId}`}
+                            >
+                              Resume
+                              <ArrowRight size={14} />
+                            </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardContent>
       </Card>
-
-
     </div>
   );
 }
