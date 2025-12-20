@@ -144,7 +144,7 @@ export default function HomePage() {
                 </Badge>
                 <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-[1.1] tracking-tight">
                   The Future of <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                  <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-indigo-600">
                     Agentic AI Lending
                   </span>
                 </h1>
@@ -328,7 +328,7 @@ export default function HomePage() {
                 {/* Orbiting Track */}
                 <div className="absolute w-[80%] h-[80%] border border-dashed border-gray-700 rounded-full animate-spin [animation-duration:10s]">
                     {/* Nodes positioned on the track using transforms */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gray-800 border border-gray-600 rounded-full flex items-center justify-center shadow-lg transform -rotate-0">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gray-800 border border-gray-600 rounded-full flex items-center justify-center shadow-lg transform rotate-0">
                         <MessageSquare className="w-6 h-6 text-blue-400" />
                     </div>
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-16 h-16 bg-gray-800 border border-gray-600 rounded-full flex items-center justify-center shadow-lg transform -rotate-180">
@@ -350,7 +350,7 @@ export default function HomePage() {
       {/* --- CTA SECTION --- */}
       <section className="py-24 px-6 md:px-12 bg-gray-900 relative overflow-hidden">
         {/* Background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-blue-600/20 rounded-full blur-[100px]"></div>
 
         <div className="container mx-auto text-center relative z-10">
           <div className="space-y-8 max-w-3xl mx-auto">
@@ -364,7 +364,7 @@ export default function HomePage() {
               <Link href="/chat">
                 <Button
                     size="lg"
-                    className="bg-white !text-black hover:bg-gray-100 h-14 px-10 text-lg font-bold shadow-xl transition-transform hover:scale-105"
+                    className="bg-white text-black! hover:bg-gray-100 h-14 px-10 text-lg font-bold shadow-xl transition-transform hover:scale-105"
                 >
                     Launch Application
                     <ChevronRight className="w-5 h-5 ml-2" />
